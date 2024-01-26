@@ -4,6 +4,7 @@
 #include <stdexcept>
 #include <string>
 #include <string_view>
+#include "stdint.h"
 
 class Reader;
 class Writer;
