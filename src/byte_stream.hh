@@ -1,10 +1,10 @@
 #pragma once
 
+#include "stdint.h"
 #include <queue>
 #include <stdexcept>
 #include <string>
 #include <string_view>
-#include "stdint.h"
 
 class Reader;
 class Writer;
@@ -17,12 +17,12 @@ protected:
   std::queue<std::string> data_queue_;
   std::queue<std::string_view> view_queue_;
 
-  bool closed_ {false};
-  bool error_ {false};
+  bool closed_ { false };
+  bool error_ { false };
 
-  uint64_t bytes_poped_ {0};
-  uint64_t bytes_buffered_ {0};
-  uint64_t bytes_pushed_ {0};
+  uint64_t bytes_poped_ { 0 };
+  uint64_t bytes_buffered_ { 0 };
+  uint64_t bytes_pushed_ { 0 };
 
 public:
   explicit ByteStream( uint64_t capacity );

@@ -1,11 +1,11 @@
+#include "byte_stream.hh"
+#include "stdint.h"
 #include <format>
+#include <iostream>
 #include <new>
 #include <stdexcept>
 #include <string_view>
-#include <iostream>
 #include <unistd.h>
-#include "byte_stream.hh"
-#include "stdint.h"
 
 using namespace std;
 
@@ -15,24 +15,24 @@ void Writer::push( string data )
 {
   // Your code here.
   //(void)data;
-  if(is_closed()) {
+  if ( is_closed() ) {
     return;
   }
 
-  if(data.empty()|| available_capacity() == 0) {
+  if ( data.empty() || available_capacity() == 0 ) {
     return;
   }
 
-  auto n = min(data.size(), available_capacity());
-  if(n < data.size()) {
-    data = data.substr(0, n);
+  auto n = min( data.size(), available_capacity() );
+  if ( n < data.size() ) {
+    data = data.substr( 0, n );
   }
 
   bytes_buffered_ += n;
   bytes_pushed_ += n;
-  data_queue_.push(std::move(data));
-  //view_queue_.emplace(data_queue_.back().c_str(), n); 
-  view_queue_.emplace(data_queue_.back()); 
+  data_queue_.push( std::move( data ) );
+  // view_queue_.emplace(data_queue_.back().c_str(), n);
+  view_queue_.emplace( data_queue_.back() );
 }
 
 void Writer::close()
@@ -68,9 +68,9 @@ uint64_t Writer::bytes_pushed() const
 string_view Reader::peek() const
 {
   // Your code here.
-  if(view_queue_ .empty()) {
+  if ( view_queue_.empty() ) {
     return {};
-  } 
+  }
 
   return view_queue_.front();
 }
@@ -90,12 +90,12 @@ bool Reader::has_error() const
 void Reader::pop( uint64_t len )
 {
   // Your code here.
-  auto n = min(bytes_buffered_, len);
+  auto n = min( bytes_buffered_, len );
 
-  while(n > 0) {
+  while ( n > 0 ) {
     auto front_size = view_queue_.front().size();
-    if(n < front_size) {
-      view_queue_.front().remove_prefix(n);
+    if ( n < front_size ) {
+      view_queue_.front().remove_prefix( n );
       bytes_buffered_ -= n;
       bytes_poped_ += n;
       return;

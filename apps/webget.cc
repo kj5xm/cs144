@@ -9,20 +9,19 @@ using namespace std;
 
 void get_URL( const string& host, const string& path )
 {
-  auto addr = make_unique<Address>(host, "http");
+  auto addr = make_unique<Address>( host, "http" );
   auto tcpSocket = make_unique<TCPSocket>();
-  tcpSocket->connect(*addr);
-  tcpSocket->write("GET "+path+" HTTP/1.1\r\n");
-  tcpSocket->write("Host: "+host+"\r\n");
-  tcpSocket->write("Connection: close\r\n");
-  tcpSocket->write("\r\n");
+  tcpSocket->connect( *addr );
+  tcpSocket->write( "GET " + path + " HTTP/1.1\r\n" );
+  tcpSocket->write( "Host: " + host + "\r\n" );
+  tcpSocket->write( "Connection: close\r\n" );
+  tcpSocket->write( "\r\n" );
   string str;
-  while(!tcpSocket->eof()) {
-    tcpSocket->read(str);
+  while ( !tcpSocket->eof() ) {
+    tcpSocket->read( str );
     cout << str;
   }
   tcpSocket->close();
-
 }
 
 int main( int argc, char* argv[] )
