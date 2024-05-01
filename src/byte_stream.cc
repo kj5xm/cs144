@@ -1,3 +1,5 @@
+#include <format>
+#include <new>
 #include <stdexcept>
 #include <string_view>
 #include <iostream>
@@ -27,16 +29,16 @@ void Writer::push( string data )
     return;
   }
 
-  if(data.size() > available_capacity()) {
-    data = data.substr(0,available_capacity());
+  auto n = min(data.size(), available_capacity());
+  if(n < data.size()) {
+    data = data.substr(0, n);
   }
 
-  bytes_buffered_ += data.size();
-  bytes_pushed_ += data.size();
-  buffer_.push(std::move(data));
-  if(view_.empty() && !buffer_.empty()) {
-    view_ = buffer_.front();
-  }
+  bytes_buffered_ += n;
+  bytes_pushed_ += n;
+  data_queue_.push(std::move(data));
+  //view_queue_.emplace(data_queue_.back().c_str(), n); 
+  view_queue_.emplace(data_queue_.back()); 
 }
 
 void Writer::close()
@@ -72,19 +74,17 @@ uint64_t Writer::bytes_pushed() const
 string_view Reader::peek() const
 {
   // Your code here.
-  if(view_ .empty()) {
-    string_view sv_empty = ""sv;
-    return sv_empty;
+  if(view_queue_ .empty()) {
+    return {};
   } 
 
-  string_view sv(view_);
-  return sv;
+  return view_queue_.front();
 }
 
 bool Reader::is_finished() const
 {
   // Your code here.
-  return closed_ && buffer_.empty();
+  return closed_ && data_queue_.empty();
 }
 
 uint64_t Reader::bytes_popped() const
@@ -102,30 +102,23 @@ string_view Reader::peek() const
 void Reader::pop( uint64_t len )
 {
   // Your code here.
-  if(len > bytes_buffered_) {
-    len = bytes_buffered_;
-  }
+  auto n = min(bytes_buffered_, len);
 
-  while(!buffer_.empty() && len > 0) {
-    if(buffer_.front().size() <= len) {
-      bytes_buffered_ -= buffer_.front().size();
-      bytes_poped_ += buffer_.front().size();
-      len -= buffer_.front().size();
-      buffer_.pop();
-    } else {
-      buffer_.front() = buffer_.front().substr(len, buffer_.front().size()-1);
-      bytes_buffered_ -= len;
-      bytes_poped_ += len;
-      len = 0;
+  while(n > 0) {
+    auto front_size = view_queue_.front().size();
+    if(n < front_size) {
+      view_queue_.front().remove_prefix(n);
+      bytes_buffered_ -= n;
+      bytes_poped_ += n;
+      return;
     }
-  }
-  
-  if(bytes_buffered_ != 0) {
-      view_ = buffer_.front();
-  } else {
-    view_ = "";
-  }
 
+    data_queue_.pop();
+    view_queue_.pop();
+    bytes_buffered_ -= front_size;
+    bytes_poped_ += front_size;
+    n -= front_size;
+  }
 }
 
 uint64_t Reader::bytes_buffered() const
