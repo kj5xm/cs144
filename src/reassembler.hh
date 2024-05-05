@@ -1,6 +1,8 @@
 #pragma once
 
 #include "byte_stream.hh"
+#include <cstdint>
+#include <map>
 
 class Reassembler
 {
@@ -42,4 +44,9 @@ public:
 
 private:
   ByteStream output_; // the Reassembler writes to this ByteStream
+  std::map<uint64_t, std::string> storage_;
+
+  uint64_t first_unassembled_;
+  uint64_t first_unaccepted_;
+  uint64_t last_internal_;
 };
