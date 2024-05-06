@@ -13,11 +13,9 @@ void Reassembler::insert( uint64_t first_index, string data, bool is_last_substr
 
   if ( is_last_substring ) {
     bytes_last_ = first_index + data.size();
-    // cout << "bytes_last_ = " << bytes_last_ << endl;
   }
 
-  if ( first_index + data.size() - 1 < first_unassembled_ || first_index >= first_unaccepted_ ) {
-     std::cout << "return due to totally out range ! : " << data << std::endl;
+  if (data.size() > 0 && (first_index + data.size() - 1 < first_unassembled_ || first_index >= first_unaccepted_) ) {
     return;
   }
 
@@ -34,8 +32,6 @@ void Reassembler::insert( uint64_t first_index, string data, bool is_last_substr
 
   if(data.size() > 0) {
     if ( storage_.empty() ) {
-      cout << "str_begin_ = " << str_begin_ << ", str_end_ = " << str_end_ << " , first_index = " << first_index
-           << ", content = " << data.substr( str_begin_ - first_index, str_end_ - str_begin_ ) << endl;
       storage_.emplace(str_begin_, data.substr( str_begin_ - first_index, str_end_ - str_begin_));
       bytes_pending_ += str_end_ - str_begin_;
     } else {
@@ -43,44 +39,45 @@ void Reassembler::insert( uint64_t first_index, string data, bool is_last_substr
       uint64_t str_ptr_ = str_begin_;
 
       for ( auto it = storage_.begin(); it != storage_.end(); it++ ) {
-        if ( str_ptr_ < it->first ) {
+        if ( str_ptr_ <= it->first ) {
           uint64_t substr_end_ = min( str_end_, it->first );
+          uint64_t substr_len_ = substr_end_ - str_ptr_;
 
-          cout << "str_ptr_ = " << str_ptr_ << ", substr_end_ = " << substr_end_
-               << " , first_index = " << first_index
-               << ", content = " << data.substr( str_ptr_ - first_index, substr_end_ - str_ptr_ ) << endl;
-          storage_.emplace( str_ptr_, data.substr( str_ptr_ - first_index, substr_end_ - str_ptr_ ) );
-          bytes_pending_ += substr_end_ - str_ptr_;
-
-          if ( str_end_ <= it->first ) {
-            break;
+          if(substr_len_ > 0) {
+            storage_.emplace( str_ptr_, data.substr( str_ptr_ - first_index, substr_len_) );
+            bytes_pending_ += substr_len_;
           }
-          str_ptr_ = it->first;
         }
 
-        if ( str_end_ < it->first + it->second.size() ) {
+        if(str_ptr_ < it->first + it->second.size()){
+          str_ptr_ = it->first + it->second.size();
+        }
+
+        if ( str_ptr_ >= str_end_) {
           break;
         }
+      }
 
-        str_ptr_ = it->first + it->second.size();
+      if(str_ptr_ < str_end_) {
+        uint64_t substr_len_ = str_end_ - str_ptr_;
+        storage_.emplace( str_ptr_, data.substr( str_ptr_ - first_index, substr_len_) );
+        bytes_pending_ += substr_len_;
       }
     }
   }
 
-  for ( auto it = storage_.begin(); it != storage_.end(); it++ ) {
+  for ( auto it = storage_.cbegin(); it != storage_.cend();  ) {
     if ( it->first == writer().bytes_pushed() ) {
-      cout << "idx = " << it->first << ", size = " << it->second.size() << " , content = " << it->second << endl;
       const_cast<Writer&>( writer() ).push( it->second );
 
       bytes_pending_ -= it->second.size();
-      storage_.erase( it);
+      storage_.erase(it++);
     } else {
       break;
     }
   }
 
   if ( writer().bytes_pushed() == bytes_last_ ) {
-    // cout << "close writer !" << endl;
     const_cast<Writer&>( writer() ).close();
   }
 }
