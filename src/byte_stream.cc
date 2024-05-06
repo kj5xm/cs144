@@ -11,11 +11,6 @@ using namespace std;
 
 ByteStream::ByteStream( uint64_t capacity ) : capacity_( capacity ) {}
 
-bool Writer::is_closed() const
-{
-  // Your code here.
-  return {};
-}
 
 void Writer::push( string data )
 {
@@ -45,12 +40,6 @@ void Writer::close()
 {
   // Your code here.
   closed_ = true;
-}
-
-void Writer::set_error()
-{
-  // Your code here.
-  error_ = true;
 }
 
 bool Writer::is_closed() const
@@ -85,18 +74,6 @@ bool Reader::is_finished() const
 {
   // Your code here.
   return closed_ && data_queue_.empty();
-}
-
-uint64_t Reader::bytes_popped() const
-{
-  // Your code here.
-  return {};
-}
-
-string_view Reader::peek() const
-{
-  // Your code here.
-  return error_;
 }
 
 void Reader::pop( uint64_t len )

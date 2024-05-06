@@ -46,7 +46,8 @@ private:
   ByteStream output_; // the Reassembler writes to this ByteStream
   std::map<uint64_t, std::string> storage_;
 
-  uint64_t first_unassembled_;
-  uint64_t first_unaccepted_;
-  uint64_t last_internal_;
+  uint64_t first_unassembled_ {0};
+  uint64_t first_unaccepted_ {0};
+  uint64_t bytes_pending_ {0};
+  uint64_t bytes_last_{UINT64_MAX};
 };
